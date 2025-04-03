@@ -1,0 +1,34 @@
+
+1. Build and Run with Docker Compose
+
+docker-compose up --build
+
+2. Stop and Remove Docker Compose Containers
+
+docker-compose down
+
+3. Build the Image Manually (if not using Compose)
+
+docker build -t cicd-generator -f src/CicdGeneratorService/Dockerfile .
+
+4. Stop and Remove Existing Container (if running)
+
+docker rm -f cicd-generator-container 2> $null
+
+5. Run the Container Manually (HTTP only)
+
+docker run -d -p 9090:8080 --name cicd-generator-container cicd-generator
+
+6. Access the Application
+
+http://localhost:9090/swagger
+
+7. Stop and Remove the Container
+
+docker stop cicd-generator-container
+docker rm cicd-generator-container
+
+8. Stop and Remove All Containers (Full Cleanup)
+
+docker stop $(docker ps -q)
+docker rm $(docker ps -aq)
