@@ -11,3 +11,4 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
+      - OpenAI_ApiKey=your-key-here
