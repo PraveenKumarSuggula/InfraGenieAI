@@ -10,6 +10,15 @@ namespace CicdGeneratorService
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowFrontend", policy =>
+                {
+                    policy.AllowAnyOrigin() //WithOrigins("http://localhost:4200") // your Angular dev server
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
 
             builder.Services.AddHttpClient<IOpenAiService, OpenAiService>();
             builder.Services.AddControllers();
@@ -19,6 +28,8 @@ namespace CicdGeneratorService
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
+
+            app.UseCors("AllowFrontend");
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

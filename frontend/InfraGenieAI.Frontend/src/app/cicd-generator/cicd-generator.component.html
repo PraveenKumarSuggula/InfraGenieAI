@@ -1,0 +1,25 @@
+<h2>🔧 Generate CI/CD Pipelines</h2>
+<form [formGroup]="form" (ngSubmit)="onGenerateCode()">
+  <mat-form-field appearance="fill">
+    <mat-label>Language/Framework</mat-label>
+    <input matInput formControlName="language">
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>CI/CD Platform</mat-label>
+    <mat-select formControlName="platform">
+      <mat-option *ngFor="let option of platforms" [value]="option">{{ option }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="fill">
+    <mat-label>Deployment Target</mat-label>
+    <mat-select formControlName="deploymentTarget">
+      <mat-option *ngFor="let target of targets" [value]="target">{{ target }}</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <button mat-raised-button color="primary">Generate</button>
+</form>
+
+<markdown *ngIf="yaml" class="variable-binding" [data]="yaml"></markdown>
