@@ -1,0 +1,5 @@
+resource_group_name      = "cicd-generator-rg"
+location                 = "West US 3"
+cosmosdb_account_name    = "cicdgeneratorcosmos"
+cosmosdb_database_name   = "PromptHistoryDB"
+keyvault_name            = "cicdgeneratorkv"
