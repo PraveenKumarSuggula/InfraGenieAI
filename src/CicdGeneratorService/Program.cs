@@ -1,5 +1,7 @@
 
+using CicdGeneratorService.Data;
 using CicdGeneratorService.Services;
+using Microsoft.Azure.Cosmos;
 
 namespace CicdGeneratorService
 {
@@ -9,29 +11,29 @@ namespace CicdGeneratorService
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AllowFrontend", policy =>
                 {
-                    policy.AllowAnyOrigin() //WithOrigins("http://localhost:4200") // your Angular dev server
+                    policy.AllowAnyOrigin()
                           .AllowAnyHeader()
                           .AllowAnyMethod();
                 });
             });
 
-            builder.Services.AddHttpClient<IOpenAiService, OpenAiService>();
             builder.Services.AddControllers();
+            builder.Services.AddHttpClient<IOpenAiService, OpenAiService>();
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // EF Core: Add DB Context
+            builder.Services.AddSingleton(s => 
+            new CosmosClient(builder.Configuration["CosmosDB:ConnectionString"]));
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
             app.UseCors("AllowFrontend");
 
-            // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -39,12 +41,8 @@ namespace CicdGeneratorService
             }
 
             app.UseHttpsRedirection();
-
             app.UseAuthorization();
-
-
             app.MapControllers();
-
             app.Run();
         }
     }
