@@ -1,30 +1,39 @@
 ﻿using CicdGeneratorService.Models;
 using CicdGeneratorService.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Azure.Cosmos;
 
-namespace CicdGeneratorService.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class CiCdController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CiCdController : ControllerBase
+    private readonly IOpenAiService _openAi;
+    private readonly Container _container;
+
+    public CiCdController(IOpenAiService openAi, CosmosClient cosmos)
     {
-        private readonly IOpenAiService _openAi;
+        _openAi = openAi;
+        _container = cosmos.GetContainer("PromptHistoryDB", "Prompts");
+    }
 
-        public CiCdController(IOpenAiService openAi)
+    [HttpPost("generate")]
+    public async Task<IActionResult> GeneratePipeline([FromBody] CiCdRequest request)
+    {
+        string prompt = $"Generate a CI/CD pipeline YAML for a {request.Language} project using {request.Platform} to deploy to {request.DeploymentTarget}.";
+        string yaml = await _openAi.GenerateYamlAsync(prompt);
+        var embedding = await _openAi.GetEmbeddingAsync(prompt);
+
+        var entry = new CiCdPromptEntry
         {
-            _openAi = openAi;
-        }
+            Username = request.Username,
+            OrgId = request.OrgId,
+            Project = request.Project,
+            Prompt = prompt,
+            Yaml = yaml,
+            Embedding = embedding
+        };
 
-        [HttpPost("generate")]
-        public async Task<IActionResult> GeneratePipeline([FromBody] CiCdRequest request)
-        {
-            string prompt = $"Generate a CI/CD pipeline YAML for a {request.Language} project using {request.Platform} to deploy to {request.DeploymentTarget}. " +
-                            $"Make it optimized, production-ready, and include build/test/deploy stages.";
-
-            var result = await _openAi.GenerateYamlAsync(prompt);
-
-            return Ok(new { yaml = result });
-        }
+        await _container.CreateItemAsync(entry, new PartitionKey(entry.OrgId));
+        return Ok(new { yaml });
     }
 }
